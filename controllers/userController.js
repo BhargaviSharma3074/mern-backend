@@ -8,10 +8,10 @@ const SECRET = "sometext";
 const register = async (req, res) => {
   try {
     // const { name, email, password, role } = req.body;
-    const { name, email, password } = req.body;
+    const { firstname, lastname, email, password } = req.body;
     const hashedpwd = await bcrypt.hash(password, 10);
     const user = {
-      name,
+      name: firstname+" "+lastname,
       email,
       password: hashedpwd,
       // role,
