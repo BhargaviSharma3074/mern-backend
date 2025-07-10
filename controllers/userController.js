@@ -8,7 +8,7 @@ const SECRET = "sometext";
 const register = async (req, res) => {
   try {
     // const { name, email, password, role } = req.body;
-    const { firstname, lastname, email, password } = req.body;
+    const { firstname, lastname, email, password, } = req.body;
     const hashedpwd = await bcrypt.hash(password, 10);
     const user = {
       name: firstname+" "+lastname,
@@ -82,4 +82,30 @@ const login = async (req, res) => {
     res.status(400).json({ message: "Something went wrong!" });
   }
 };
-export { register, login, showUsers, userUpdate, userDelete };
+
+const showProfile = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await userModel.findOne({ email });
+    if (user) {
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (isMatch) {
+        const userObj = {
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        };
+        res.status(200).json({ userObj });
+      } else {
+        res.status(400).json({ message: "Invalid password!" });
+      }
+    } else {
+      res.status(400).json({ message: "User not found!" });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(400).json({ message: "Something went wrong!" });
+  }
+};
+
+export { register, login, showUsers, userUpdate, userDelete, showProfile };

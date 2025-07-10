@@ -21,5 +21,6 @@ mongoose.connect(`mongodb+srv://${dbuser}:${dbpass}@cluster0.ashmqdp.mongodb.net
     });
   });
 
+app.use(express.static("public"));
 app.use(express.json());
 app.use("/api/users", userRouter);
