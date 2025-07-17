@@ -13,11 +13,11 @@ app.use(cors());
 const dbuser = encodeURIComponent(process.env.DBUSER);
 const dbpass = encodeURIComponent(process.env.DBPASS);
 
-mongoose.connect(`mongodb://localhost:27017/merncafe`).then(() => {
-  app.listen(8080, () => {
-    console.log("Server started");
-  });
-});
+// mongoose.connect(`mongodb://localhost:27017/merncafe`).then(() => {
+//   app.listen(8080, () => {
+//     console.log("Server started");
+//   });
+// });
 
 // mongoose.connect(`mongodb://${dbuser}:${dbpass}@localhost:27017/lpu?authsource=admin`).then(() => {
 //     app.listen(8080, () => {
@@ -25,11 +25,11 @@ mongoose.connect(`mongodb://localhost:27017/merncafe`).then(() => {
 //     });
 //   });
 
-// mongoose.connect(`mongodb+srv://${dbuser}:${dbpass}@cluster0.ashmqdp.mongodb.net/merncafe`).then(() => {
-//     app.listen(8080, () => {
-//       console.log("Server started");
-//     });
-//   });
+mongoose.connect(`mongodb+srv://${dbuser}:${dbpass}@cluster0.ashmqdp.mongodb.net/merncafe`).then(() => {
+    app.listen(8080, () => {
+      console.log("Server started");
+    });
+  });
 
 // app.use(express.static("public"));
 app.use(express.json());
