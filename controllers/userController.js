@@ -11,7 +11,8 @@ const register = async (req, res) => {
     const { firstname, lastname, email, password } = req.body;
     const hashedpwd = await bcrypt.hash(password, 10);
     const user = {
-      name: firstname+" "+lastname,
+      firstname,
+      lastname,
       email,
       password: hashedpwd,
       // role,
@@ -47,30 +48,50 @@ const userDelete = async (req, res) => {
   }
 };
 
+// const showUsers = async (req, res) => {
+//   try {
+//     const result = await userModel.find();
+//     res.status(200).json(result);
+//   } catch (err) {
+//     console.log(err);
+//     res.status(400).json({ message: "Something went wrong!" });
+//   }
+// };
+
 const showUsers = async (req, res) => {
   try {
-    const result = await userModel.find();
-    res.status(200).json(result);
+    const { page = 1, limit = 3, search = "" } = req.query;
+    const skip = (page - 1) * limit;
+    const count = await userModel.countDocuments({ firstname: { $regex: search, $options: "i" } });
+    const total = Math.ceil(count / limit);
+    const users = await userModel
+      .find({ firstname: { $regex: search, $options: "i" } })
+      .skip(skip)
+      .limit(limit)
+      .sort({updatedAt:-1})
+    res.status(200).json({ users, total });
   } catch (err) {
     console.log(err);
-    res.status(400).json({ message: "Something went wrong!" });
+    res.status(500).json({ message: "Something went wrong" });
   }
 };
 
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await userModel.findOne({ email });
-    if (user) {
-      const isMatch = await bcrypt.compare(password, user.password);
+    const existingUser = await userModel.findOne({ email });
+    if (existingUser) {
+      const isMatch = await bcrypt.compare(password, existingUser.password);
       if (isMatch) {
         const userObj = {
-          name: user.name,
-          email: user.email,
-          role: user.role,
+          id:existingUser._id,
+          firstname: existingUser.firstname,
+          // lastname: existingUser.lastname,
+          email: existingUser.email,
+          role: existingUser.role,
         };
         const token = jwt.sign(userObj, SECRET, { expiresIn: "1h" });
-        res.status(200).json({ userObj, token });
+        res.status(200).json({ ...userObj, token });
       } else {
         res.status(400).json({ message: "Invalid password!" });
       }
@@ -91,7 +112,8 @@ const showProfile = async (req, res) => {
       const isMatch = await bcrypt.compare(password, user.password);
       if (isMatch) {
         const userObj = {
-          name: user.name,
+          firstname: user.firstname,
+          lastname: user.lastname,
           email: user.email,
           role: user.role,
         };
@@ -108,4 +130,58 @@ const showProfile = async (req, res) => {
   }
 };
 
-export { register, login, showUsers, userUpdate, userDelete, showProfile };
+const getUser = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const result = await userModel.findOne({ _id: id });
+    res.status(200).json(result);
+  } catch (err) {
+    console.log(err);
+    res.status(400).json({ message: "Something went wrong" });
+  }
+};
+
+const addUser = async (req, res) => {
+  try {
+    const body = req.body;
+    const hashedpwd = await bcrypt.hash(body.password, 10);
+    body.password = hashedpwd;
+    const result = await userModel.create(body);
+    res.status(200).json(result);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+const updateProfile = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { firstname, lastname, email, password } = req.body;
+    const hashedpwd = await bcrypt.hash(password, 10);
+    const userObj = {
+      firstname,
+      lastname,
+      email,
+      password: hashedpwd,
+    };
+    const result = await userModel.findByIdAndUpdate(id, userObj);
+    res.status(200).json(result);
+  } catch (err) {
+    console.log(err);
+    res.status(400).json({ message: "Something went wrong" });
+  }
+};
+
+const profile = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const result = await userModel.findOne({ _id: id });
+    res.status(200).json(result);
+  } catch (err) {
+    console.log(err);
+    res.status(400).json({ message: "Something went wrong" });
+  }
+};
+
+export { register, login, showUsers, userUpdate, userDelete, showProfile, updateProfile, getUser, addUser, profile };
