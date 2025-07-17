@@ -50,11 +50,11 @@ const showProducts = async (req, res) => {
     const { page = 1, limit = 3, search = "" } = req.query;
     const skip = (page - 1) * limit;
     const count = await productModel.countDocuments({
-      productName: { $regex: search, $options: "i" },
+      pname: { $regex: search, $options: "i" },
     });
     const total = Math.ceil(count / limit);
     const products = await productModel
-      .find({ productName: { $regex: search, $options: "i" } })
+      .find({ pname: { $regex: search, $options: "i" } })
       .skip(skip)
       .limit(limit)
       .sort({ updatedAt: -1 });

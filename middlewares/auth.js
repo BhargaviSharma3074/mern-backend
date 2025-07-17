@@ -3,6 +3,10 @@ const SECRET = "sometext";
 const authenticate = (req, res, next) => {
   try {
     let token = req.headers.authorization;
+    if(!token || !token.startsWith("Bearer "))
+    {
+      return res.status(401).json({message: "No token provided!"});
+    }
     token = token.split(" ")[1];
     const user = jwt.verify(token, SECRET);
     req.role = user.role;
@@ -14,7 +18,7 @@ const authenticate = (req, res, next) => {
 };
 const authorize = (role) => {
   return (req, res, next) => {
-    if (role === req.role) {
+    if (req.role === role) {
       next();
     } else {
       return res.json({ message: "Unauthorized access" });
